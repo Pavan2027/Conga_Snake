@@ -8,8 +8,6 @@ from random import randint
 TODO
 -> Follower character
 -> Self-collisions
--> Game-over screen
--> Text on screen
 '''
 
 
@@ -45,6 +43,7 @@ class Game:
             load_image('tile094.png'),
             load_image('tile074.png'),
             load_image('tile090.png'),
+            load_image('tile020.png')
         ]
         self.animate = False
         self.player_animate_no = 0
@@ -60,7 +59,7 @@ class Game:
         self.followerList = []
 
     def run(self):
-        while True:
+        while True:  
             self.screen.fill((14, 219, 24))
             pygame.draw.rect(self.screen, (0,0,0), self.top_border_des)
             pygame.draw.rect(self.screen, (0,0,0), self.bottom_border_des)
@@ -70,70 +69,71 @@ class Game:
             pygame.draw.rect(self.screen, (255,255,255), self.bottom_border)
             pygame.draw.rect(self.screen, (255,255,255), self.right_border)
             pygame.draw.rect(self.screen, (255,255,255), self.left_border)
-    
-            img = (pygame.font.SysFont("Arial", 50, True)).render("Conga, Conga, Conga!", True, (0, 0, 0))
-            self.screen.blit(img, (320, 10))
-            img = (pygame.font.SysFont("Arial", 50, True)).render("Followers = " + str(self.count), True, (0, 0, 0))
-            self.screen.blit(img, (400, 650))
 
-            if self.followerSpawn:
-                self.count_start = True
-                self.follower = PhysicsEntity(self, 'follower', (self.x, self.y), (13,16))
-                self.follower.render(self.screen, 0)
+            if self.count == 10:
+                img = (pygame.font.SysFont("Arial", 50, True)).render("Game Over!", True, (0, 0, 0))
+                self.screen.blit(img, (400, 10))
+                img = (pygame.font.SysFont("Arial", 50, True)).render("Followers = " + str(self.count), True, (0, 0, 0))
+                self.screen.blit(img, (400, 650))
             else:
-                self.x = randint(100, 1080-180)
-                self.y = randint(100, 720-180)
-                self.followerSpawn = True
-                if self.count_start:
-                    self.count += 1
-                    self.count_start = False
-                    
-            '''if self.count > len(self.followerList):
-                temp = self.follower
-                if len(self.followerList) == 0:
-                    temp.pos = self.player.prev_pos
+                img = (pygame.font.SysFont("Arial", 50, True)).render("Conga, Conga, Conga!", True, (0, 0, 0))
+                self.screen.blit(img, (320, 10))
+                img = (pygame.font.SysFont("Arial", 50, True)).render("Followers = " + str(self.count), True, (0, 0, 0))
+                self.screen.blit(img, (400, 650))
+
+                if self.followerSpawn:
+                    self.count_start = True
+                    self.follower = PhysicsEntity(self, 'follower', (self.x, self.y), (13,16))
+                    self.follower.render(self.screen, 9)
                 else:
-                    tempprev = self.follower[-1]
-                    self.temp.pos = tempprev.prev_pos
-                self.followerList.append(temp)
-                print(len(self.followerList))
-'''
-            if self.animate:
-                self.player_animate_no += 0.055
-                if self.player_animate_no >= self.cur_state:
-                    self.player_animate_no = self.cur_state - 2
-                self.player.render(self.screen, self.player_animate_no)
-            else:
-                self.player.render(self.screen, 0)
-                self.player_animate_no = 1
+                    self.x = randint(100, 1080-180)
+                    self.y = randint(100, 720-180)
+                    self.followerSpawn = True
+                    if self.count_start:
+                        self.count += 1
+                        self.count_start = False
 
-            
-            if self.count > 0:
-                for i in range(len(self.followerList)):
-                    temp = self.followerList[i]
-                    temp.render(self.screen, 0)
-                    if i == 0:
-                        temp.update_pos(self.player.prev_pos)
-                    else:
-                        prev_temp = self.followerList[i-1]
-                        temp.update_pos(prev_temp.prev_pos)
+                        if len(self.followerList) == 0:
+                            self.follower.pos = self.player.prev_pos
+                        else:
+                            tempprev = self.followerList[-1]
+                            self.follower.pos = tempprev.prev_pos
+                        (self.followerList).append(self.follower)
+                        continue   
 
-            self.player.update((self.xmovement[1] - self.xmovement[0], self.ymovement[1] - self.ymovement[0]))
+                if self.animate:
+                    self.player_animate_no += 0.055
+                    if self.player_animate_no >= self.cur_state:
+                        self.player_animate_no = self.cur_state - 2
+                    self.player.render(self.screen, self.player_animate_no)
+                else:
+                    self.player.render(self.screen, 0)
+                    self.player_animate_no = 1
+                
+                if self.count > 0:
+                    for follower in self.followerList:
+                        if self.followerList.index(follower) == 0:
+                            follower.update_pos(self.player.prev_pos)
+                        else:
+                            follower.update_pos(self.followerList[(self.followerList.index(follower)-1)].prev_pos)
+                        follower.render(self.screen, 9)
 
-            player_r = pygame.Rect(self.player.pos[0], self.player.pos[1], 39, 48)
-            follower_r = pygame.Rect(self.follower.pos[0], self.follower.pos[1], 39, 48)
-            
-            if player_r.colliderect(self.top_border):
-                self.player.pos[1] = 640 - 48
-            if player_r.colliderect(self.bottom_border):
-                self.player.pos[1] = 80
-            if player_r.colliderect(self.right_border):
-                self.player.pos[0] = 1000 - 39
-            if player_r.colliderect(self.left_border):
-                self.player.pos[0] = 80
+                self.player.update((self.xmovement[1] - self.xmovement[0], self.ymovement[1] - self.ymovement[0]))
 
-            if player_r.colliderect(follower_r):
-                self.followerSpawn = False
+                player_r = pygame.Rect(self.player.pos[0], self.player.pos[1], 39, 48)
+                follower_food_r = pygame.Rect(self.follower.pos[0], self.follower.pos[1], 39, 48)
+                
+                if player_r.colliderect(self.top_border):
+                    self.player.pos[1] = 640 - 48
+                if player_r.colliderect(self.bottom_border):
+                    self.player.pos[1] = 80
+                if player_r.colliderect(self.right_border):
+                    self.player.pos[0] = 1000 - 39
+                if player_r.colliderect(self.left_border):
+                    self.player.pos[0] = 80
+
+                if player_r.colliderect(follower_food_r):
+                    self.followerSpawn = False
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:

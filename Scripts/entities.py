@@ -22,5 +22,5 @@ class PhysicsEntity:
         self.pos[0] = pos[0]
         self.pos[1] = pos[1]
 
-    def render(self, surf, no):
+    def render(self, surf, no = 0):
         surf.blit(self.game.player_assets[int(no)], self.pos)
